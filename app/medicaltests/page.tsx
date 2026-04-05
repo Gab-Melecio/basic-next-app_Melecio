@@ -1,9 +1,8 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 export default function MedicalTestsPage() {
   const [tests, setTests] = useState([]);
@@ -25,33 +24,34 @@ export default function MedicalTestsPage() {
 
   // --- Part D: Export to PDF ---
  const exportToPDF = () => {
-    try {
-      const doc = new jsPDF('p', 'mm', 'a4'); // Set to A4 as required
-      
-      doc.text("Medical Tests Report", 14, 15);
+  try {
+    const doc = new jsPDF();
+    
+    // Add a title
+    doc.setFontSize(18);
+    doc.text("Medical Tests Report", 14, 20);
+    
+    // Call autoTable directly using the 'doc' as the first argument
+    autoTable(doc, {
+      startY: 30,
+      head: [['Test Name', 'Category', 'Unit', 'Min', 'Max']],
+      body: tests.map((t: any) => [
+        t.name, 
+        t.category, 
+        t.unit, 
+        t.normalmin, 
+        t.normalmax
+      ]),
+      theme: 'striped',
+      headStyles: { fillColor: [220, 38, 38] } // Red color to match your button
+    });
 
-      // We use (doc as any) to bypass the TypeScript 'autoTable' error
-      (doc as any).autoTable({
-        startY: 20,
-        head: [['Test Name', 'Category', 'Unit', 'Min', 'Max']],
-        body: tests.map((t: any) => [
-          t.name, 
-          t.category, 
-          t.unit, 
-          t.normalmin, 
-          t.normalmax
-        ]),
-        theme: 'striped',
-        headStyles: { fillColor: [220, 53, 69] }, // Red header to match your button
-      });
-
-      doc.save("Medical_Tests_Report.pdf");
-      console.log("PDF Generated successfully");
-    } catch (error) {
-      console.error("PDF Error:", error);
-      alert("Failed to generate PDF. Check console for details.");
-    }
-  };
+    doc.save("Medical_Tests_Report.pdf");
+  } catch (error) {
+    console.error("PDF Generation Error:", error);
+    alert("Failed to generate PDF. Check console for details.");
+  }
+};
   return (
     <div className="p-8 bg-white min-h-screen text-black">
       <div className="flex justify-between items-center mb-6">
