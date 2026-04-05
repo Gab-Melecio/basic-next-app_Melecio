@@ -24,17 +24,34 @@ export default function MedicalTestsPage() {
   };
 
   // --- Part D: Export to PDF ---
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Medical Tests Report", 14, 15);
-    (doc as any).autoTable({
-      startY: 20,
-      head: [['Test Name', 'Category', 'Unit', 'Min', 'Max']],
-      body: tests.map((t: any) => [t.name, t.category, t.unit, t.normalmin, t.normalmax]),
-    });
-    doc.save("Medical_Tests_Report.pdf");
-  };
+ const exportToPDF = () => {
+    try {
+      const doc = new jsPDF('p', 'mm', 'a4'); // Set to A4 as required
+      
+      doc.text("Medical Tests Report", 14, 15);
 
+      // We use (doc as any) to bypass the TypeScript 'autoTable' error
+      (doc as any).autoTable({
+        startY: 20,
+        head: [['Test Name', 'Category', 'Unit', 'Min', 'Max']],
+        body: tests.map((t: any) => [
+          t.name, 
+          t.category, 
+          t.unit, 
+          t.normalmin, 
+          t.normalmax
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [220, 53, 69] }, // Red header to match your button
+      });
+
+      doc.save("Medical_Tests_Report.pdf");
+      console.log("PDF Generated successfully");
+    } catch (error) {
+      console.error("PDF Error:", error);
+      alert("Failed to generate PDF. Check console for details.");
+    }
+  };
   return (
     <div className="p-8 bg-white min-h-screen text-black">
       <div className="flex justify-between items-center mb-6">
